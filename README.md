@@ -1,0 +1,1 @@
+# Szakdolgozat-ceges-szamla-olvaso-backend
