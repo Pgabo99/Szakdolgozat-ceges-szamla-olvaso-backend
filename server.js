@@ -1,4 +1,3 @@
-
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
@@ -23,17 +22,19 @@ app.post('/processPDF', upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'Nincs fájl feltöltve' });
   }
-
+  console.log(req.file);
   const pdfPath = req.file.path;
 
   try {
     // Beolvassuk a fájlt
     const fileBuffer = fs.readFileSync(pdfPath);
+    console.log('asd')
 
     // PDF-ből szöveg kinyerése
     const data = await pdfParse(fileBuffer);
-    const extractedText = data.text.replace(/\s+/g, ''); // Minden szóközt eltávolítunk
-
+    const extractedText = data.text.replaceAll(' ', '').replaceAll("\n", "").replaceAll("\t", "").replaceAll("\v", ""); // Minden szóközt eltávolítunk
+    console.log(extractedText)
+    console.log(data.text)
     if (extractedText !== "") {
       return res.json({ type: 'text', content: data.text });
     } else {
@@ -75,7 +76,7 @@ app.post('/pdf-to-image', upload.single('file'), async (req, res) => {
   });
 
   try {
-    await converter(1, { responseType: 'image' }); // Az első oldalt alakítja képpé
+    await converter.convert(); // Az első oldalt alakítja képpé
     const imageBuffer = fs.readFileSync(outputPath);
 
     res.setHeader('Content-Type', 'image/png');
