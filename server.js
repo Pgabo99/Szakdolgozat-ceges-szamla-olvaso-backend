@@ -96,7 +96,7 @@ app.post('/pdf-to-image', upload.single('file'), async (req, res) => {
   }
 });
 
-app.use(express.static(path.join(__dirname, './szamla-olvaso')));
+app.use(express.static(path.join(__dirname, './szamla-olvaso/browser')));
 app.get('/kezdooldal', (req, res) => {
   res.sendFile(path.join(__dirname,'./szamla-olvaso/browser/index.html'));
 })
