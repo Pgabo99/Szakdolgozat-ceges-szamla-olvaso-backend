@@ -12,11 +12,11 @@ const app = express();
 const upload = multer({ dest: './tmp/uploads/' }); // Helyi mappa
 
 app.use(cors());
-// app.use(cors({
-//   origin: 'http://localhost:4200',
-//   methods: ['GET', 'POST'],
-//   allowedHeaders: ['Content-Type']
-// }));
+app.use(cors({
+  origin: 'https://szakdolgozat-ceges-szamla-olvaso-frontend.onrender.com',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type']
+}));
 
 app.use('/images', express.static(path.join(__dirname, './tmp/uploads'))); // A fájlokat innen érhetjük el
 
