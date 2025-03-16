@@ -2,9 +2,10 @@
   "name": "szakdolgozat-ceges-szamla-olvaso-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js", 
+    "build": "echo 'Nincs build lépés, mert sima JavaScript-et használsz.'"
   },
   "keywords": [],
   "author": "",
