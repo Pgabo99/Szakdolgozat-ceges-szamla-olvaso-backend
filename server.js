@@ -1,15 +1,15 @@
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
+const fs = require('fs');
 const pdfParse = require('pdf-parse');
 const { pdfToPng } = require('pdf-to-png-converter');
 const path = require('path');
 
 const app = express();
 
-// Memória alapú tárolás
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+// Az ideiglenes fájltárolás a helyi rendszerben
+const upload = multer({ dest: './tmp/uploads/' }); // Helyi mappa
 
 app.use(cors());
 app.use(cors({
@@ -18,16 +18,19 @@ app.use(cors({
   allowedHeaders: ['Content-Type']
 }));
 
-app.use('/images', express.static(path.join(__dirname, '/tmp/uploads')));
+app.use('/images', express.static(path.join(__dirname, './tmp/uploads'))); // A fájlokat innen érhetjük el
 
+// PDF feldolgozó endpoint
 app.post('/processPDF', upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'Nincs fájl feltöltve' });
   }
 
-  const fileBuffer = req.file.buffer; // A fájl adataink a memóriában
+  const pdfPath = req.file.path; // A fájl ideiglenesen ide lesz mentve
 
   try {
+    const fileBuffer = fs.readFileSync(pdfPath);
+
     // PDF-ből szöveg kinyerése
     const data = await pdfParse(fileBuffer);
     const extractedText = data.text.replaceAll(' ', '').replaceAll("\n", "").replaceAll("\t", "").replaceAll("\v", ""); // Minden szóközt eltávolítunk
@@ -36,12 +39,12 @@ app.post('/processPDF', upload.single('file'), async (req, res) => {
       return res.json({ type: 'text', content: data.text });
     } else {
       // PDF konvertálása képpé
-      const pngPages = await pdfToPng(fileBuffer, {
+      const pngPages = await pdfToPng(pdfPath, {
         disableFontFace: true,
         useSystemFonts: true,
         enableXfa: false,
         viewportScale: 2.0,
-        outputFolder: '/tmp/uploads', // Az ideiglenes fájlokat itt tárolhatod
+        outputFolder: './tmp/uploads', // Kép ide kerül
         outputFileMaskFunc: (pageNumber) => `page_${pageNumber}.png`,
         pagesToProcess: [1],
         strictPagesToProcess: false,
@@ -57,19 +60,19 @@ app.post('/processPDF', upload.single('file'), async (req, res) => {
   }
 });
 
-// További endpoint a fájlok PDF-ből képpé alakítására
+// PDF-ből képpé konvertálás
 app.post('/pdf-to-image', upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'Nincs fájl feltöltve' });
   }
 
-  const fileBuffer = req.file.buffer; // A fájl adataink a memóriában
-  const outputPath = `/tmp/uploads/${req.file.originalname}.png`; // Az ideiglenes tároló hely
+  const pdfPath = req.file.path;
+  const outputPath = `./tmp/uploads/${req.file.filename}.png`; // Az ideiglenes tároló hely
 
-  const converter = fromPath(fileBuffer, {
+  const converter = fromPath(pdfPath, {
     density: 300, // DPI, jobb minőséghez növeld
-    saveFilename: req.file.originalname,
-    savePath: '/tmp/uploads', // Az ideiglenes tároló hely
+    saveFilename: req.file.filename,
+    savePath: './tmp/uploads', // Az ideiglenes tároló hely
     format: 'png',
     width: 1240,
     height: 1754,
@@ -84,13 +87,19 @@ app.post('/pdf-to-image', upload.single('file'), async (req, res) => {
 
     // Opcionálisan töröld a fájlokat
     setTimeout(() => {
-      // Törölheted az ideiglenes fájlokat itt, ha szükséges
+      fs.unlinkSync(pdfPath); // Töröljük a PDF fájlt
+      fs.unlinkSync(outputPath); // Töröljük a PNG képet
     }, 5000);
   } catch (error) {
     console.error('Hiba a PDF konvertálás során:', error);
     res.status(500).json({ error: 'Nem sikerült a PDF képpé alakítása' });
   }
 });
+
+app.use(express.static(path.join(__dirname, './frontend/browser')));
+ app.get('/kezdooldal', (req, res) => {
+   res.sendFile(path.join(__dirname, './frontend/browser/index.html'));
+ })
 
 // Express szerver indítása
 app.listen(3000, () => console.log('Szerver fut a 3000-es porton'));
