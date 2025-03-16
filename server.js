@@ -101,9 +101,9 @@ app.get('/kezdooldal', (req, res) => {
   res.sendFile(path.join(__dirname, './browser/index.html'));
 })
 
-app.get('/', (req, res) => {
-  res.send('Hello from Vercel!');
-});
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, './browser/index.html'));
+})
 
 // Express szerver indítása
 app.listen(3000, () => console.log('Szerver fut a 3000-es porton'));
