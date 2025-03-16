@@ -107,3 +107,5 @@ app.get('*', (req, res) => {
 
 // Express szerver indítása
 app.listen(3000, () => console.log('Szerver fut a 3000-es porton'));
+
+module.exports = app;
