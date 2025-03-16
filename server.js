@@ -6,7 +6,7 @@ const pdfParse = require('pdf-parse');
 const { pdfToPng } = require('pdf-to-png-converter');
 const path = require('path');
 
-const app = express()
+const app = express();
 const upload = multer({ dest: 'uploads/' }); // Ide menti a fájlokat
 app.use(cors());
 
@@ -92,5 +92,10 @@ app.post('/pdf-to-image', upload.single('file'), async (req, res) => {
     res.status(500).json({ error: 'Nem sikerült a PDF képpé alakítása' });
   }
 });
+
+app.use(express.static(path.join(__dirname, './frontend/browser')));
+app.get('/kezdooldal', (req, res) => {
+  res.sendFile(path.join(__dirname, './frontend/browser/index.html'));
+})
 
 app.listen(3000, () => console.log('Szerver fut a 3000-es porton'));
