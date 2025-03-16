@@ -10,7 +10,6 @@ const app = express();
 
 // Az ideiglenes fájltárolás a helyi rendszerben
 const upload = multer({ dest: './tmp/uploads/' }); // Helyi mappa
-app.use(express.static(path.join(__dirname, './browser')));
 
 app.use(cors());
 // app.use(cors({
@@ -97,8 +96,13 @@ app.post('/pdf-to-image', upload.single('file'), async (req, res) => {
   }
 });
 
+app.use(express.static(path.join(__dirname, './browser')));
 app.get('/kezdooldal', (req, res) => {
-  res.sendFile(path.join(__dirname,'./browser/index.html'));
+  res.sendFile(path.join(__dirname, '/browser/index.html'));
+})
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '/browser/index.html'));
 })
 
 // Express szerver indítása
