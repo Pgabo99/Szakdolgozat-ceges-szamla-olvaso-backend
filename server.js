@@ -28,7 +28,7 @@ app.post('/processPDF', upload.single('file'), async (req, res) => {
 
     // PDF-ből szöveg kinyerése
     const data = await pdfParse(fileBuffer);
-    const extractedText = data.text.replaceAll(' ', '').replaceAll("\n", "").replaceAll("\t", "").replaceAll("\v", ""); // Minden szóközt eltávolítunk
+    const extractedText = data.text.replaceAll(' ', '').replaceAll("\n", "").replaceAll("\t", "").replaceAll("\v", "");
 
     if (extractedText !== "") {
       return res.json({ type: 'text', content: data.text });
@@ -46,48 +46,12 @@ app.post('/processPDF', upload.single('file'), async (req, res) => {
         verbosityLevel: 0,
       });
 
-      const imagePath = `page_1.png`; // Az első oldal képe
+      const imagePath = `page_1.png`;
       res.json({ type: 'path', images: [{ path: imagePath }] });
     }
   } catch (error) {
     console.error('Hiba történt a PDF feldolgozásakor:', error);
     res.status(500).json({ error: 'Hiba történt a PDF feldolgozásakor' });
-  }
-});
-
-// PDF-ből képpé konvertálás
-app.post('/pdf-to-image', upload.single('file'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'Nincs fájl feltöltve' });
-  }
-
-  const pdfPath = req.file.path;
-  const outputPath = `./tmp/uploads/${req.file.filename}.png`; // Az ideiglenes tároló hely
-
-  const converter = fromPath(pdfPath, {
-    density: 300, // DPI, jobb minőséghez növeld
-    saveFilename: req.file.filename,
-    savePath: './tmp/uploads', // Az ideiglenes tároló hely
-    format: 'png',
-    width: 1240,
-    height: 1754,
-  });
-
-  try {
-    await converter.convert(); // Az első oldalt alakítja képpé
-    const imageBuffer = fs.readFileSync(outputPath);
-
-    res.setHeader('Content-Type', 'image/png');
-    res.send(imageBuffer);
-
-    // Opcionálisan töröld a fájlokat
-    setTimeout(() => {
-      fs.unlinkSync(pdfPath); // Töröljük a PDF fájlt
-      fs.unlinkSync(outputPath); // Töröljük a PNG képet
-    }, 5000);
-  } catch (error) {
-    console.error('Hiba a PDF konvertálás során:', error);
-    res.status(500).json({ error: 'Nem sikerült a PDF képpé alakítása' });
   }
 });
 
